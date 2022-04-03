@@ -1,0 +1,38 @@
+# This playbook responsible to create .env file, init the db 
+# and start the app as a service using pm2 in prod env.
+
+---
+  - name: "Template a file"
+    template:
+      src: './.env'
+      dest: /home/azureuser/bootcamp-app/
+      owner: azureuser
+      mode: u=r,g=r,o=r
+    register: setenv_finished
+
+  - name: "Initialize db"
+    shell: npm run initdb
+    ars:
+      chdir: /home/azureuser/bootcamp-app/
+    when: setenv_finished.changed
+    register: initdb_finished
+
+  - name: "Start the app"
+    shell: sudo pm2 start npm -- run dev
+    args:
+      chdir: /home/azureuser/bootcamp-app/
+    when: initdb_finished.changed
+    register: app_finished
+
+  - name: "Save PM2"
+    shell: sudo pm2 save
+    args:
+      chdir: /home/azureuser/bootcamp-app/
+    when: app_finished.changed
+    register: save_finished
+
+  - name: "PM2 Startup"
+    shell: sudo pm2 startup
+    args:
+      chdir: /home/azureuser/bootcamp-app/
+    when: save_finished.changed

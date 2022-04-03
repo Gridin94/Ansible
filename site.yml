@@ -1,0 +1,21 @@
+- name : apply common configuration to all nodes
+  hosts: webservers 
+  become: true
+
+  roles:
+    - common
+
+
+- name : apply the prod servers configuration 
+  hosts: prod
+  become: true
+
+  roles:
+    - prod
+
+- name : apply the staging servers configuration
+  hosts: staging
+  become: true
+
+  roles:
+    - stage
